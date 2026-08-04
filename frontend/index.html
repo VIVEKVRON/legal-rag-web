@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Legal Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Chat Area -->
+        <main class="chat-section">
+            <header>
+                <h1>Legal AI Assistant</h1>
+                <p>Ask a question about the Rent Control Act or the IPC.</p>
+                <div class="upload-section" style="margin-top: 15px;">
+                <input type="file" id="pdf-upload" accept=".pdf" style="display: none;">
+                <button onclick="document.getElementById('pdf-upload').click()" style="background: #0066cc;">+ Upload Legal PDF</button>
+                <span id="upload-status" style="font-size: 13px; color: #666; margin-left: 10px;"></span>
+                </div>
+            </header>
+            
+            <div id="chat-box" class="chat-box">
+                <!-- Messages will be injected here via JavaScript -->
+            </div>
+
+            <form id="query-form" class="input-area">
+                <input type="text" id="user-input" placeholder="Type your legal question here..." required>
+                <button type="submit">Ask</button>
+            </form>
+        </main>
+
+        <!-- Sidebar for Sources -->
+        <aside class="sources-section">
+            <h2>Retrieved Legal Sources</h2>
+            <div id="sources-box" class="sources-box">
+                <p class="empty-state">Sources will appear here...</p>
+            </div>
+        </aside>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
