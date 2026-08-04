@@ -3,42 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Legal Assistant</title>
+    <title>StatutIQ</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Main Chat Area -->
-        <main class="chat-section">
-            <header>
-                <h1>Legal AI Assistant</h1>
-                <p>Ask a question about the Rent Control Act or the IPC.</p>
-                <div class="upload-section" style="margin-top: 15px;">
-                <input type="file" id="pdf-upload" accept=".pdf" style="display: none;">
-                <button onclick="document.getElementById('pdf-upload').click()" style="background: #0066cc;">+ Upload Legal PDF</button>
-                <span id="upload-status" style="font-size: 13px; color: #666; margin-left: 10px;"></span>
+    <div class="grid-overlay"></div>
+    <div class="app-container">
+        
+        <!-- SPA: Home View -->
+        <div id="home-view" class="view-section">
+            
+            <!-- CSS Motion Background -->
+            <div class="motion-bg">
+                <div class="orb orb-1"></div>
+                <div class="orb orb-2"></div>
+                <div class="orb orb-3"></div>
+            </div>
+
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-headline">StatutIQ: AI-Powered Statutory Intelligence</h1>
+                    <p class="hero-subheadline">Advanced legal research and analysis terminal for navigating complex laws and acts with unparalleled precision.</p>
+                    <button id="enter-terminal-btn" class="primary-btn">Enter Terminal</button>
+                </div>
+
+                <!-- Feature Showcase Grid -->
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- Shield Icon for Privacy -->
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <h3>Absolute Privacy</h3>
+                        <p>100% local, on-premise vector execution. Your queries and sensitive legal documents never leave your terminal.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- Globe Icon for Multilingual -->
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        </div>
+                        <h3>Multilingual Support</h3>
+                        <p>Seamlessly interact, transcribe, and synthesize legal context in English, Kannada, and Hindi using advanced STT and TTS.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- Target Icon for Precision -->
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        </div>
+                        <h3>Statutory Precision</h3>
+                        <p>Powered by advanced RAG architecture. Every AI response is strictly grounded in and cited against the official Indian legal acts database.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPA: Chat View -->
+        <div id="chat-view" class="view-section" style="display: none;">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="logo" id="home-logo" title="Return to Home">StatutIQ</div>
+                <div class="header-controls">
+                    <select id="language-select" class="lang-dropdown">
+                        <option value="en-IN">English</option>
+                        <option value="hi-IN">Hindi (हिंदी)</option>
+                        <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+                    </select>
                 </div>
             </header>
-            
-            <div id="chat-box" class="chat-box">
-                <!-- Messages will be injected here via JavaScript -->
-            </div>
 
-            <form id="query-form" class="input-area">
-                <input type="text" id="user-input" placeholder="Type your legal question here..." required>
-                <button type="submit">Ask</button>
-            </form>
-        </main>
+            <div class="workspace">
+                <!-- Left Pane: Chat Area -->
+                <main class="chat-pane">
+                    <div id="chat-box" class="chat-history">
+                        <!-- Chat history injected by app.js -->
+                    </div>
 
-        <!-- Sidebar for Sources -->
-        <aside class="sources-section">
-            <h2>Retrieved Legal Sources</h2>
-            <div id="sources-box" class="sources-box">
-                <p class="empty-state">Sources will appear here...</p>
+                    <div class="input-area">
+                        <form id="query-form" class="input-wrapper">
+                            <input type="text" id="user-input" placeholder="Ask a legal question..." autocomplete="off" required>
+                            <button type="button" id="mic-btn" class="icon-btn" title="Voice Input (Speech-to-Text)">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="22"></line>
+                                </svg>
+                            </button>
+                            <button type="submit" id="submit-btn">Ask</button>
+                        </form>
+                    </div>
+                </main>
+
+                <!-- Right Pane: Sources -->
+                <aside class="sources-pane">
+                    <div class="sources-header">
+                        <h2>Retrieved Sources</h2>
+                    </div>
+                    <div id="sources-box" class="sources-list">
+                        <!-- Sources injected by app.js -->
+                    </div>
+                </aside>
             </div>
-        </aside>
+        </div>
+
     </div>
     
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
