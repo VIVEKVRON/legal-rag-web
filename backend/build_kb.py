@@ -19,20 +19,61 @@ if not client.collection_exists(collection_name=COLLECTION_NAME):
     )
 
 # 3. Chunking Logic
+import re
+
 def chunk_legal_documents(documents):
     chunks = []
+    chunk_size = 512
+    overlap = 128
+    
     for doc in documents:
-        raw_chunks = [chunk.strip() for doc_chunk in doc["text"].split('\n\n') if (chunk := doc_chunk.strip())]
-        if not raw_chunks:
+        text = doc["text"]
+        doc_id = doc["doc_id"]
+        
+        words = text.split()
+        if not words:
             continue
-        parent_context = raw_chunks[0] 
-        for i, text_chunk in enumerate(raw_chunks):
-            final_text = text_chunk if i == 0 else f"{parent_context}\n{text_chunk}"
+            
+        # Detect sections to maintain structural context
+        sections = []
+        for match in re.finditer(r"(Section\s+\d+[A-Z]*|Article\s+\d+[A-Z]*|Schedule\s+\d+[A-Z]*)", text, re.IGNORECASE):
+            sections.append((match.start(), match.group(1).strip()))
+            
+        def get_current_section(char_idx):
+            current_sec = "General Provisions"
+            for start_idx, sec_name in sections:
+                if start_idx <= char_idx:
+                    current_sec = sec_name
+                else:
+                    break
+            return current_sec
+
+        i = 0
+        chunk_idx = 0
+        while i < len(words):
+            chunk_words = words[i:i + chunk_size]
+            chunk_text = " ".join(chunk_words)
+            
+            # Approximate character index to find the current section
+            snippet = " ".join(chunk_words[:10])
+            char_idx = text.find(snippet)
+            if char_idx == -1: char_idx = 0
+            
+            current_section = get_current_section(char_idx)
+            
+            # Prepend structural metadata
+            metadata_header = f"Act: {doc_id} | Section: {current_section}\n"
+            final_text = metadata_header + chunk_text
+            
             chunks.append({
-                "chunk_id": f"{doc['doc_id']}_chunk_{i}",
-                "doc_id": doc["doc_id"],
-                "text": final_text 
+                "chunk_id": f"{doc_id}_chunk_{chunk_idx}",
+                "doc_id": doc_id,
+                "text": final_text
             })
+            
+            chunk_idx += 1
+            i += (chunk_size - overlap)
+            
     return chunks
 
 # 4. Main Ingestion Loop
