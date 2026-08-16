@@ -1,38 +1,48 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pydantic import BaseModel
-import os
+from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 
-# We now only need the query processing function from the engine
-from rag_engine import process_query
+from backend.schemas import QueryRequest, QueryResponse
+from backend.services.rag_orchestrator import RAGOrchestrator
 
-app = FastAPI(title="Legal RAG API")
+orchestrator = None
 
-# Simplified request model - target_doc_id is gone
-class QueryRequest(BaseModel):
-    query: str
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("Initializing StatutIQ Backend Models & Services...")
+    global orchestrator
+    orchestrator = RAGOrchestrator()
+    orchestrator.initialize_indexes()
+    print("StatutIQ Backend is READY.")
+    yield
+    # Shutdown
+    print("Shutting down StatutIQ Backend...")
+    orchestrator = None
 
-class QueryResponse(BaseModel):
-    answer: str
-    sources: list
+app = FastAPI(lifespan=lifespan)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}"},
+    )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/ask", response_model=QueryResponse)
-async def ask_legal_question(request: QueryRequest):
-    try:
-        # Pass only the query to the backend engine
-        result = process_query(request.query)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def ask_question(request: QueryRequest):
+    result = orchestrator.process_query(request.query)
+    return result
 
-# Get the absolute path to the frontend folder
-frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
-
-# Serve the index.html on the root URL
-@app.get("/")
-async def serve_frontend():
-    return FileResponse(os.path.join(frontend_dir, "index.html"))
-
-# Mount the rest of the frontend folder to serve static files (like app.js and style.css)
-app.mount("/", StaticFiles(directory=frontend_dir), name="frontend")
+# Serve static frontend
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
