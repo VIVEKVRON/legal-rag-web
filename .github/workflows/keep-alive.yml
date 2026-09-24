@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Ping Hugging Face Space
         run: |
-          curl -I https://huggingface.co/spaces/YOUR-USERNAME/YOUR-SPACE-NAME
+          curl -I https://huggingface.co/spaces/vivekr3840/StatutIQ
