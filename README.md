@@ -53,6 +53,14 @@ StatutIQ operates on a modular, decoupled architecture:
 5. **Access the Application:**
    Open your browser and navigate to `http://localhost:8000`.
 
+## Deployment (Hugging Face Spaces)
+
+StatutIQ is optimized to run on the free CPU tier of Hugging Face Spaces (16GB RAM). 
+
+- **CPU Optimization**: The LLM engine (`services/llm_generator.py`) natively leverages `llama-cpp-python` to run a 4-bit quantized GGUF build of `Qwen2.5-1.5B-Instruct` efficiently on CPU threads without running out of memory.
+- **Docker Ready**: A strict, Hugging Face-compliant `Dockerfile` configures a `python:3.10-slim` environment, installs required C++ compilation headers for the LLM, sets up a non-root `user 1000` to prevent permission crashes, and routes FastAPI to port `7860`.
+- **24/7 Keep-Alive**: The repository includes a GitHub Actions workflow (`.github/workflows/keep-alive.yml`) to automatically ping the Space every 24 hours, bypassing the default 48-hour hibernation timer. *(Note: You must manually replace the Space URL placeholder in the workflow file for this to work).*
+
 ## Disclaimer
 
 *StatutIQ is an AI research tool and is not a substitute for formal legal counsel. Always verify statutory references and seek professional legal advice.*
